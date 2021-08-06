@@ -32,21 +32,25 @@ App = {
   // @truffle/contract functions setProvider(), deployed()
 	loadContract: async () => {
 		try {
+			const contractAddress = "0x7b48a182479126cac52d6a4637b21ce4cc309656"
 			const res = await fetch("TasksContract.json");
 			const tasksContractJSON = await res.json();
-			App.tasksContract = new web3.eth.Contract(tasksContractJSON.abi);
-			await App.tasksContract.deploy({
-				data: tasksContractJSON.bytecode,
-        arguments: []
-			}).send({
-        from: App.account,
-        gas: 6000000,
-        to: '0x0000000000000000000000000000000000000000',
-    });
-			console.log(App.tasksContract)
-			// App.contracts.TasksContract = TruffleContract(tasksContractJSON);
-			// App.contracts.TasksContract.setProvider(App.web3Provider);
-			// App.tasksContract = await App.contracts.TasksContract.deployed();
+			if (contractAddress) {
+				console.log("Using deployed contract")
+				App.tasksContract = new web3.eth.Contract(tasksContractJSON.abi, contractAddress);
+			} else {
+				console.log("Deploying contract")
+				App.tasksContract = new web3.eth.Contract(tasksContractJSON.abi);
+				await App.tasksContract.deploy({
+					data: tasksContractJSON.bytecode,
+	        arguments: []
+				}).send({
+	        from: App.account,
+	        gas: 6000000,
+	        to: '0x0000000000000000000000000000000000000000',
+	    	});
+				console.log(App.tasksContract)
+			}
 		} catch (error) {
 			console.error(error);
 		}
@@ -54,19 +58,30 @@ App = {
 
   // render account balance as inner text
 	renderBalance: async () => {
+		const addressTranslator = new AddressTranslator();
+		const polyjuiceAddress = addressTranslator.ethAddressToGodwokenShortAddress(App.account);
 		document.getElementById("account").innerText = App.account;
+		document.getElementById("p-account").innerText = polyjuiceAddress;
 	},
 
   // render tasks
 	renderTasks: async () => {
-		const taskCounter = await App.tasksContract.taskCounter();
-		const taskCounterNumber = taskCounter.toNumber();
+		const taskCounter = await App.tasksContract.methods.taskCounter().call({
+			gas: 6000000,
+			from: App.account,
+		});
+		// const taskCounterNumber = taskCounter.toNumber();
+		const taskCounterNumber = parseInt(taskCounter);
 
 		let html = "";
 
 		for (let i = 1; i <= taskCounterNumber; i++) {
-			const task = await App.tasksContract.tasks(i);
-			const taskId = task[0].toNumber();
+			const task = await App.tasksContract.methods.tasks(i).call({
+				gas: 6000000,
+				from: App.account,
+			});
+			// const taskId = task[0].toNumber();
+			const taskId = parseInt(task[0])
 			const taskTitle = task[1];
 			const taskDescription = task[2];
 			const taskDone = task[3];
@@ -77,15 +92,9 @@ App = {
         <div class="card bg-light rounded-0 mb-2">
           <div class="card-header d-flex justify-content-between align-items-center">
             <span>${taskTitle}</span>
-            <div class="form-check form-switch">
-              <input class="form-check-input" data-id="${taskId}" type="checkbox" onchange="App.toggleDone(this)" ${
-				taskDone === true && "checked"
-			}>
-            </div>
           </div>
           <div class="card-body">
             <span>${taskDescription}</span>
-            <span>${taskDone}</span>
             <p class="text-muted">Task was created ${new Date(
 							taskCreatedAt * 1000
 						).toLocaleString()}</p>
@@ -100,19 +109,18 @@ App = {
 	},
 	createTask: async (title, description) => {
 		try {
-			const result = await App.tasksContract.createTask(title, description, {
+			const result = await App.tasksContract.methods.createTask(title, description).call({
 				gas: 6000000,
 				from: App.account,
 			});
-			console.log("result.logs[0].args", result.logs[0].args);
-			window.location.reload();
+			alert("After the transaction completes, please refresh the webpage.")
 		} catch (error) {
 			console.error(error);
 		}
 	},
 	toggleDone: async (element) => {
 		const taskId = element.dataset.id;
-		await App.tasksContract.toggleDone(taskId, {
+		await App.tasksContract.methods.toggleDone(taskId).call({
 			gas: 6000000,
 			from: App.account,
 		});
