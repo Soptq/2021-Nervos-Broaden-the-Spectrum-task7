@@ -13,6 +13,7 @@ Submitter: Soptq
 It is in this repo, under `app` folder.
 
 ```
+https://github.com/Soptq/2021-Nervos-Broaden-the-Spectrum-task7/tree/main/app
 ```
 
 ## If you deployed any smart contracts as part of this tutorial, please provide the transaction hash of the deployment transaction, the deployed contract address, and the ABI of the deployed smart contract. (Provide all in text format.)
