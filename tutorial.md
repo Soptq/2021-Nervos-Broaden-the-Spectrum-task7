@@ -148,13 +148,13 @@ const task = await App.tasksContract.methods.tasks(i).call({
 			});
 ...
 ...
-const result = await App.tasksContract.methods.createTask(title, description).call({
+const result = await App.tasksContract.methods.createTask(title, description).send({
 				gas: 6000000,
 				from: App.account,
 			});
 ...
 ...
-App.tasksContract.methods.toggleDone(taskId).call({
+App.tasksContract.methods.toggleDone(taskId).send({
 			gas: 6000000,
 			from: App.account,
 		});
