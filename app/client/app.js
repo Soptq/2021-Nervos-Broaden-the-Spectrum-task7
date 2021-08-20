@@ -109,7 +109,7 @@ App = {
 	},
 	createTask: async (title, description) => {
 		try {
-			const result = await App.tasksContract.methods.createTask(title, description).call({
+			const result = await App.tasksContract.methods.createTask(title, description).send({
 				gas: 6000000,
 				from: App.account,
 			});
@@ -120,7 +120,7 @@ App = {
 	},
 	toggleDone: async (element) => {
 		const taskId = element.dataset.id;
-		await App.tasksContract.methods.toggleDone(taskId).call({
+		await App.tasksContract.methods.toggleDone(taskId).send({
 			gas: 6000000,
 			from: App.account,
 		});
